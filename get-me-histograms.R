@@ -12,10 +12,14 @@ groups <-input %>%
   group_by(date_command) %>%
   summarise(usageCount = length(date_command)) 
 
-list_words = lapply(groups$date_command, function(word){strsplit(word, " ")[[1]][2]})
+list_words = as.vector(unlist(lapply(groups$date_command, function(word){strsplit(word, " ")[[1]][2]})))
 numberOfBars = length(list_words)
 
-df_groups <- as.data.frame(groups)[1:30,]
+groups <- as.data.frame(groups)
+#groups$date_command <- list_words
+groups <- cbind(groups, list_words)
+df_groups <- as.data.frame(groups)[3:30,]
+
 # Option #1: using barplot function
 # ==================================
 #barplot(groups$usageCount, main="Commands distribution", xlab="Number of Gears", xlim=c(0,133))
@@ -28,7 +32,18 @@ df_groups <- as.data.frame(groups)[1:30,]
 
 # Option #2: using ggplot function
 # ==================================
-ggplot(data=df_groups, aes(x=date_command, y=usageCount)) +
+ggplot(data=df_groups, aes(x=list_words, y=usageCount)) +
+  ggtitle("Shell Commands distribution") +
   geom_bar(stat="identity", fill="steelblue")+
   geom_text(aes(label=usageCount), vjust=-0.3, size=3.5)+
-  theme_minimal()
+  xlab("Command name") +
+  ylab("Execution counts") +
+  theme(axis.text.x = element_text(angle = -80, hjust = -0.05, face = "bold",size=14),
+        axis.text=element_text(size=10),
+        axis.title=element_text(size=14,face="bold"),
+        axis.title.x = element_text(color="darkseagreen4", size=14, face="bold"),
+        axis.title.y = element_text(color="darkseagreen4", size=14, face="bold"),
+        plot.subtitle=element_text(face="italic",size=12,colour="grey40"),
+        plot.title=element_text(size=18,face="bold") ) +
+        labs(title="Workflow stats in shell",
+        subtitle="Over the period: March - April 2018")
